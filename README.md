@@ -1,315 +1,444 @@
-# Task Manager Backend (Spring Boot)
+# Task Manager REST API
 
-This is a backend-only Task Manager API that I built as a final-year
-Computer Engineering student to practice real-world backend development
-with Java, Spring Boot, MySQL, Redis, RabbitMQ, and AWS EC2.
+A backend-focused Task Management REST API built with **Java 17 and Spring Boot 3**, featuring JWT authentication, MySQL persistence, Redis caching, RabbitMQ messaging, validation, and OpenAPI/Swagger documentation.
 
-It's designed to feel like a small production backend: users sign up and
-log in with JWT-based authentication, then manage their tasks with
-proper CRUD APIs, pagination, search, caching, and async notifications.
+The project demonstrates a production-style backend architecture with secure authentication, database integration, caching, asynchronous messaging, and RESTful API design.
 
-------------------------------------------------------------------------
+## 🚀 Features
 
-## Why I Built This
+- 🔐 **JWT Authentication**
+  - User registration and login
+  - Stateless authentication using JSON Web Tokens
+  - Protected task APIs
 
-I wanted a single project that:
+- 📋 **Task Management**
+  - Create, read, update, and delete tasks
+  - Task status and priority management
+  - Due dates and attachment URL support
+  - Pagination and sorting
 
--   Shows I can build a clean, RESTful backend from scratch.
--   Uses technologies that real companies actually use (Spring Boot,
-    MySQL, Redis, RabbitMQ, Docker, AWS EC2).
--   Goes beyond simple CRUD and touches authentication, caching,
-    messaging, and cloud deployment.
+- 🗄️ **MySQL + Spring Data JPA**
+  - Relational database persistence
+  - Entity mapping using JPA/Hibernate
+  - Automatic schema updates during development
 
-This project is meant to be something I can confidently explain in
-interviews and showcase on my resume as a backend-focused fresher.
+- ⚡ **Redis Caching**
+  - Cache frequently accessed task data
+  - Cache eviction on update/delete operations
+  - Reduces unnecessary database queries
 
-------------------------------------------------------------------------
+- 📨 **RabbitMQ Messaging**
+  - Asynchronous task-related notifications
+  - Producer/consumer messaging architecture
+  - Decouples background processing from API requests
 
-## Features
+- 🛡️ **Spring Security**
+  - JWT authentication filter
+  - Secured API endpoints
+  - Request authorization
 
--   User registration and login with JWT authentication.
+- ✅ **Validation & Error Handling**
+  - Request validation using Jakarta Validation
+  - Centralized exception handling
 
-### Task Management
+- 📚 **API Documentation**
+  - OpenAPI/Swagger integration
+  - Interactive API testing through Swagger UI
 
--   Create, read, update, delete tasks.
+- 🐳 **Docker**
+  - Redis container
+  - RabbitMQ container with management UI
 
--   Status, priority, due date, and attachment URL support.
+---
 
--   Pagination, sorting, and basic filtering.
+## 🛠️ Tech Stack
 
--   Redis caching for faster reads of frequently accessed tasks.
+| Category | Technology |
+|---|---|
+| Language | Java 17 |
+| Framework | Spring Boot 3.2 |
+| REST API | Spring Web |
+| Security | Spring Security + JWT |
+| ORM | Spring Data JPA + Hibernate |
+| Database | MySQL |
+| Caching | Redis |
+| Messaging | RabbitMQ |
+| API Documentation | OpenAPI / Swagger |
+| Build Tool | Maven |
+| Containerization | Docker |
+| Testing/API Client | Postman |
+| Version Control | Git & GitHub |
 
--   RabbitMQ-based async notifications when tasks are created (simulated
-    email notifications).
+---
 
--   Centralized error handling and validation.
+## 🏗️ Architecture
 
--   API testing using Postman.
+```text
+                    ┌──────────────────┐
+                    │     Client       │
+                    │ Postman / Swagger│
+                    └────────┬─────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │   Spring Boot API   │
+                  │                     │
+                  │ Controllers         │
+                  │ Services            │
+                  │ Security / JWT      │
+                  └─────────┬───────────┘
+                            │
+              ┌─────────────┼──────────────┐
+              │             │              │
+              ▼             ▼              ▼
+        ┌──────────┐   ┌──────────┐  ┌───────────┐
+        │  MySQL   │   │  Redis   │  │ RabbitMQ  │
+        │ Database │   │  Cache   │  │ Messaging │
+        └──────────┘   └──────────┘  └───────────┘
+```
 
--   Optional deployment on AWS EC2.
+### Request Flow
 
-------------------------------------------------------------------------
+```text
+Client
+  ↓
+Controller
+  ↓
+JWT Authentication
+  ↓
+Service Layer
+  ↓
+Repository Layer
+  ↓
+MySQL
 
-## Tech Stack
+Frequently accessed data
+  ↓
+Redis Cache
 
-### Backend
+Background notification
+  ↓
+RabbitMQ
+  ↓
+Message Consumer
+```
 
--   Java 17
--   Spring Boot 3.x (Web, Data JPA, Security, Validation)
--   JWT for authentication
--   MySQL (running via MySQL command line client on `root@localhost`)
--   Redis (via Docker)
--   RabbitMQ (via Docker)
+---
 
-### Tools
+## 📁 Project Structure
 
--   Maven
--   IntelliJ IDEA
--   Docker Desktop
--   Postman
--   Git & GitHub
--   AWS EC2 (Ubuntu) for deployment
+```text
+spring-taskmanager-backend/
+│
+├── src/
+│   ├── main/
+│   │   ├── java/com/taskmanager/
+│   │   │   ├── config/
+│   │   │   ├── controller/
+│   │   │   ├── dto/
+│   │   │   ├── entity/
+│   │   │   ├── exception/
+│   │   │   ├── repository/
+│   │   │   ├── security/
+│   │   │   ├── service/
+│   │   │   └── TaskmanagerApiApplication.java
+│   │   │
+│   │   └── resources/
+│   │       └── application.yml
+│   │
+│   └── test/
+│
+├── .gitignore
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── README.md
+```
 
-------------------------------------------------------------------------
+---
 
-## Project Architecture (High-Level)
+## 🔑 Authentication Flow
 
-### Spring Boot REST API
+```text
+1. User registers
+       ↓
+2. User logs in
+       ↓
+3. Server validates credentials
+       ↓
+4. JWT token is generated
+       ↓
+5. Client sends JWT with requests
+       ↓
+6. JWT Authentication Filter validates token
+       ↓
+7. Authorized request reaches controller
+```
 
--   `AuthController` -- user registration and login.
--   `TaskController` -- all task-related operations (CRUD, pagination,
-    filtering).
+Protected requests use:
 
-### Database Layer
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
 
--   MySQL for users and tasks (relational, normalized schema).
--   Spring Data JPA repositories.
+---
 
-### Caching Layer
+## 📌 API Endpoints
 
--   Redis for caching selected reads (e.g., getting a task by ID).
+### Authentication
 
-### Messaging Layer
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Authenticate user and receive JWT |
 
--   RabbitMQ for async notifications when a task is created (producer +
-    consumer).
+### Tasks
 
-------------------------------------------------------------------------
+| Method | Endpoint | Authentication |
+|---|---|---|
+| POST | `/api/tasks` | JWT Required |
+| GET | `/api/tasks` | JWT Required |
+| GET | `/api/tasks/{id}` | JWT Required |
+| PUT | `/api/tasks/{id}` | JWT Required |
+| DELETE | `/api/tasks/{id}` | JWT Required |
 
-## Request Flow
+> The exact request/response models and available query parameters can be explored through Swagger.
 
-Client (Postman)\
-→ Spring Boot API\
-→ MySQL\
-→ Redis (for caching)\
-→ RabbitMQ (for async notifications)
+---
 
-------------------------------------------------------------------------
+## 📖 Swagger API Documentation
 
-# Getting Started (Local Setup)
+Once the application is running, open:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+OpenAPI specification:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+Swagger provides an interactive interface for exploring and testing the REST APIs.
+
+---
+
+# ⚙️ Local Setup
 
 ## 1. Prerequisites
 
-Make sure you have:
+Install:
 
--   Java 17 installed and added to PATH\
--   Maven installed (`mvn -v` to verify)\
--   MySQL installed locally (using MySQL command line client on
-    `root@localhost`)\
--   Docker Desktop installed and running (for Redis and RabbitMQ)\
--   Postman (or any HTTP client)
+- Java 17+
+- MySQL 8+
+- Docker Desktop
+- Git
 
-------------------------------------------------------------------------
+Maven does not need to be installed globally because the project includes the Maven Wrapper.
+
+Verify Java:
+
+```bash
+java -version
+```
+
+---
 
 ## 2. Clone the Repository
 
-``` bash
+```bash
 git clone https://github.com/tejaspande1211/spring-taskmanager-backend.git
+
 cd spring-taskmanager-backend
 ```
 
-------------------------------------------------------------------------
+---
 
-## 3. MySQL Setup
+## 3. Create MySQL Database
 
-Open your MySQL CLI and run:
+Open MySQL and run:
 
-``` sql
+```sql
 CREATE DATABASE taskmanager;
-CREATE USER 'tejas'@'localhost' IDENTIFIED BY 'changeme';
-GRANT ALL PRIVILEGES ON taskmanager.* TO 'tejas'@'localhost';
-FLUSH PRIVILEGES;
 ```
 
-Update `application.yml` or `application.properties`:
+The application uses:
 
-``` yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/taskmanager
-    username: tejas
-    password: changeme
-    driver-class-name: com.mysql.cj.jdbc.Driver
+```text
+Database: taskmanager
+Host: localhost
+Port: 3306
 ```
 
-> Note: Change username/password in your own local environment.
+---
 
-------------------------------------------------------------------------
+## 4. Configure Environment Variables
 
-## 4. Start Redis and RabbitMQ with Docker
+The application reads sensitive configuration from environment variables.
 
-``` bash
-# Redis
+### Windows PowerShell
+
+```powershell
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="your_mysql_password"
+$env:JWT_SECRET="your_secure_jwt_secret"
+```
+
+### Linux / macOS
+
+```bash
+export DB_USERNAME="root"
+export DB_PASSWORD="your_mysql_password"
+export JWT_SECRET="your_secure_jwt_secret"
+```
+
+**Do not commit passwords, JWT secrets, or other credentials to GitHub.**
+
+---
+
+## 5. Start Redis
+
+Run:
+
+```bash
 docker run -d --name redis-server -p 6379:6379 redis:7-alpine
+```
 
-# RabbitMQ (with management UI)
+Redis runs on:
+
+```text
+localhost:6379
+```
+
+---
+
+## 6. Start RabbitMQ
+
+Run:
+
+```bash
 docker run -d --name rabbitmq-server \
   -p 5672:5672 \
   -p 15672:15672 \
   rabbitmq:3-management
 ```
 
-Redis:\
-`localhost:6379`
+RabbitMQ:
 
-RabbitMQ UI:\
-http://localhost:15672\
-Default credentials: `guest / guest`
-
-Make sure your `application.yml` includes:
-
-``` yaml
-spring:
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+```text
+AMQP: localhost:5672
+Management UI: http://localhost:15672
 ```
 
-------------------------------------------------------------------------
+Default local development credentials:
 
-## 5. Configure JWT Secret
-
-``` yaml
-jwt:
-  secret: your-very-long-secret-key-here
-  expiration: 86400000
+```text
+Username: guest
+Password: guest
 ```
 
-Use a strong secret in your actual environment.
+---
 
-------------------------------------------------------------------------
+## 7. Run the Application
 
-## 6. Build and Run the Application
+### Windows
 
-``` bash
-mvn clean package -DskipTests
-mvn spring-boot:run
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
 
-Or run the generated JAR:
+### Linux / macOS
 
-``` bash
-java -jar target/taskmanager-api-0.0.1-SNAPSHOT.jar
+```bash
+./mvnw spring-boot:run
 ```
 
-Application runs at:
+The API starts on:
 
-    http://localhost:8080
-
-------------------------------------------------------------------------
-
-# API Overview
-
-## Auth
-
--   `POST /api/auth/register` -- Register a new user\
--   `POST /api/auth/login` -- Log in and receive JWT token
-
-## Tasks (JWT Required)
-
--   `POST /api/tasks` -- Create task\
--   `GET /api/tasks` -- Get paginated tasks\
--   `GET /api/tasks/{id}` -- Get task by ID\
--   `PUT /api/tasks/{id}` -- Update task\
--   `DELETE /api/tasks/{id}` -- Delete task
-
-For task APIs, include header:
-
-    Authorization: Bearer <your-jwt-token>
-
-If Swagger is enabled:
-
-    http://localhost:8080/swagger-ui.html
-
-or
-
-    http://localhost:8080/swagger-ui/index.html
-
-------------------------------------------------------------------------
-
-## Redis Caching
-
-Spring caching is enabled using Redis cache manager.
-
--   `@Cacheable` on read methods (e.g., get task by ID)\
--   `@CacheEvict` on update/delete methods
-
-Flow:
-
--   First request → MySQL → Cached in Redis\
--   Subsequent requests → Served from Redis
-
-------------------------------------------------------------------------
-
-## RabbitMQ Notifications
-
-When a new task is created:
-
--   Service publishes a message to a RabbitMQ exchange/queue.\
--   A consumer (`@RabbitListener`) processes the message.\
--   Simulates sending email/notification.
-
-Purpose:
-
--   Decouple API logic from slow operations.\
--   Demonstrate message-driven architecture.
-
-------------------------------------------------------------------------
-
-# Optional: AWS EC2 Deployment
-
--   Created t2.micro/t3.micro instance in ap-south-1 (Mumbai).\
--   Installed Java 17 and MySQL on EC2.\
--   Ran Redis and RabbitMQ via Docker.\
--   Copied JAR to `/opt/taskmanager` and ran:
-
-``` bash
-java -jar taskmanager-api-0.0.1-SNAPSHOT.jar
+```text
+http://localhost:8080
 ```
 
--   Opened port 8080 in Security Group.\
--   Accessed API via public IP.
+---
 
-------------------------------------------------------------------------
+## 🧪 Testing
 
-## Possible Improvements (Future Work)
+The APIs can be tested using:
 
--   File upload to AWS S3 for task attachments.\
--   Standardized API error format.\
--   Advanced filtering (status, priority, date range).\
--   Rate limiting and stronger security hardening.\
--   React frontend to consume this API.
+- Swagger UI
+- Postman
 
-------------------------------------------------------------------------
+Typical flow:
 
-## About Me
+```text
+Register User
+     ↓
+Login
+     ↓
+Receive JWT
+     ↓
+Authorize with JWT
+     ↓
+Create Task
+     ↓
+Get Tasks
+     ↓
+Update Task
+     ↓
+Delete Task
+```
 
-I'm Tejas Pande, a final-year Computer Engineering student from Pune,
-India, focusing on backend development with Java and Spring Boot.
+---
+
+## 💡 Key Backend Concepts Demonstrated
+
+This project provides practical experience with:
+
+- REST API development
+- Spring Boot application architecture
+- Dependency Injection
+- Spring Security
+- JWT authentication
+- Authentication filters
+- DTO-based request handling
+- Service and repository layers
+- JPA/Hibernate
+- MySQL database integration
+- Redis caching
+- RabbitMQ asynchronous messaging
+- Input validation
+- Exception handling
+- API documentation with Swagger/OpenAPI
+- Docker-based infrastructure
+- Maven build and dependency management
+
+---
+
+## 🔮 Future Improvements
+
+Potential improvements include:
+
+- Docker Compose for the complete local environment
+- Automated unit and integration tests
+- CI/CD using GitHub Actions
+- Role-based authorization
+- Advanced task filtering
+- Standardized API error responses
+- Rate limiting
+- AWS deployment
+- React frontend
+- File storage using Amazon S3
+
+---
+
+## 👨‍💻 Author
+
+**Deepak Kumar**
+
+Computer Science Engineering Graduate  
+Backend / Software Developer
+
+### Technologies of Interest
+
+Java • Spring Boot • REST APIs • Spring Security • SQL • AWS • Docker • Redis • RabbitMQ • React
